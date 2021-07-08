@@ -13,7 +13,9 @@ phases:
       - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.15.11/2020-07-08/bin/darwin/amd64/kubectl # Download kubectl 
       - chmod +x ./kubectl
       - mkdir ~/.kube
-      - aws eks --region ap-northeast-2 update-kubeconfig --name user04-eks
+      - mv ./kubectl /usr/local/bin/kubectl
+      - $(aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name user04-eks)
+      
   pre_build:
     commands:
       - echo Region = $AWS_DEFAULT_REGION # Check Environment Variables
