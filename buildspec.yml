@@ -10,12 +10,10 @@ phases:
       java: corretto8 # Amazon Corretto 8 - production-ready distribution of the OpenJDK
       docker: 18
     commands:
-      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.15.11/2020-07-08/bin/darwin/amd64/kubectl # Download kubectl 
-      - chmod +x ./kubectl
-      - mkdir ~/.kube
-      - mv ./kubectl /usr/local/bin/kubectl
-      - $(aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name user04-eks)
-      
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl 
+      - chmod +x ./kubectl 
+      - mv ./kubectl /usr/local/bin/kubectl 
+          
   pre_build:
     commands:
       - echo Region = $AWS_DEFAULT_REGION # Check Environment Variables
@@ -37,6 +35,10 @@ phases:
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG # Push docker image to ECR
       - echo Deploy service into EKS
+      - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true 
+      - kubectl config set-credentials admin --token="$KUBE_TOKEN" 
+      - kubectl config set-context default --cluster=k8s --user=admin 
+      - kubectl config use-context default 
       - kubectl apply -f ./kubernetes/deployment.yml # Deploy
       - kubectl apply -f ./kubernetes/service.yml # Service
 
